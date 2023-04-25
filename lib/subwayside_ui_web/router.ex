@@ -2,12 +2,21 @@ defmodule SubwaysideUiWeb.Router do
   use SubwaysideUiWeb, :router
 
   pipeline :browser do
+    @content_security_policy Enum.join(
+                               [
+                                 "default-src 'none'",
+                                 "img-src 'self' cdn.mbta.com",
+                                 "style-src 'self'",
+                                 "script-src 'self'"
+                               ],
+                               "; "
+                             )
     plug :accepts, ["html"]
     plug :fetch_session
     plug :fetch_live_flash
     plug :put_root_layout, {SubwaysideUiWeb.Layouts, :root}
     plug :protect_from_forgery
-    plug :put_secure_browser_headers
+    plug :put_secure_browser_headers, %{"content-security-policy" => @content_security_policy}
   end
 
   pipeline :api do
@@ -25,7 +34,7 @@ defmodule SubwaysideUiWeb.Router do
   #   pipe_through :api
   # end
 
-  # Enable LiveDashboard and Swoosh mailbox preview in development
+  # Enable LiveDashboard in development
   if Application.compile_env(:subwayside_ui, :dev_routes) do
     # If you want to use the LiveDashboard in production, you should put
     # it behind authentication and allow only admins to access it.
@@ -38,7 +47,6 @@ defmodule SubwaysideUiWeb.Router do
       pipe_through :browser
 
       live_dashboard "/dashboard", metrics: SubwaysideUiWeb.Telemetry
-      forward "/mailbox", Plug.Swoosh.MailboxPreview
     end
   end
 end

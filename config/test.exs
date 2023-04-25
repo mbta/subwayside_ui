@@ -7,13 +7,6 @@ config :subwayside_ui, SubwaysideUiWeb.Endpoint,
   secret_key_base: "d+met8MmlHIncW+Lf63/CEtCzupmLZQ5w8yycOr3uc+AZQaMwnENHB8RMtWow262",
   server: false
 
-# In test we don't send emails.
-config :subwayside_ui, SubwaysideUi.Mailer,
-  adapter: Swoosh.Adapters.Test
-
-# Disable swoosh api client as it is only required for production adapters.
-config :swoosh, :api_client, false
-
 # Print only warnings and errors during test
 config :logger, level: :warning
 

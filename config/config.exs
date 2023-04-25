@@ -17,15 +17,6 @@ config :subwayside_ui, SubwaysideUiWeb.Endpoint,
   pubsub_server: SubwaysideUi.PubSub,
   live_view: [signing_salt: "Gjj0V7iV"]
 
-# Configures the mailer
-#
-# By default it uses the "Local" adapter which stores the emails
-# locally. You can see the emails in your browser, at "/dev/mailbox".
-#
-# For production it's recommended to configure a different adapter
-# at the `config/runtime.exs`.
-config :subwayside_ui, SubwaysideUi.Mailer, adapter: Swoosh.Adapters.Local
-
 # Configure esbuild (the version is required)
 config :esbuild,
   version: "0.17.11",

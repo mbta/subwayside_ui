@@ -9,7 +9,13 @@ defmodule SubwaysideUi.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
-      deps: deps()
+      deps: deps(),
+      test_coverage: [tool: LcovEx],
+      releases: [
+        subwayside_ui: [
+          include_executables_for: [:unix]
+        ]
+      ]
     ]
   end
 
@@ -40,13 +46,17 @@ defmodule SubwaysideUi.MixProject do
       {:phoenix_live_dashboard, "~> 0.7.2"},
       {:esbuild, "~> 0.7", runtime: Mix.env() == :dev},
       {:tailwind, "~> 0.2.0", runtime: Mix.env() == :dev},
-      {:swoosh, "~> 1.3"},
       {:finch, "~> 0.13"},
       {:telemetry_metrics, "~> 0.6"},
       {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 0.20"},
       {:jason, "~> 1.2"},
-      {:plug_cowboy, "~> 2.5"}
+      {:plug_cowboy, "~> 2.5"},
+      {:sobelow, "~> 0.12.2", only: [:dev], runtime: false},
+      {:dialyxir, "~> 1.3", only: [:dev], runtime: false},
+      {:credo, "~> 1.7", only: [:dev], runtime: false},
+      {:mix_audit, "~> 2.1", only: [:dev], runtime: false},
+      {:lcov_ex, "~> 0.3.2", only: [:test], runtime: false}
     ]
   end
 
