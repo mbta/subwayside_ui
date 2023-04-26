@@ -98,6 +98,7 @@ defmodule SubwaysideUiWeb.TrainsLive do
           <tr>
             <th class="p-2 pb-0">Car No.</th>
             <th class="p-2 pb-0">Passengers</th>
+            <th class="p-2 pb-0">Crowding</th>
             <th class="p-2 pb-0">Weight (#)</th>
           </tr>
         </thead>
@@ -137,16 +138,36 @@ defmodule SubwaysideUiWeb.TrainsLive do
     # weight is in 10s of pounds, and CRRC assumes that passengers are 155
     # pounds. We round down so that people can be pleasantly surprised.
     passengers = div(car_weight - car_base_weight, 15)
+    seated_capacity = SubwaysideUi.car_aw1(car)
+
+    {filled_pins, crowding} =
+      cond do
+        passengers <= seated_capacity -> {1, "Not crowded"}
+        passengers <= SubwaysideUi.car_aw2(car) -> {2, "Some crowding"}
+        true -> {3, "Crowded"}
+      end
+
+    filled_classes = for _ <- 1..filled_pins, do: "hero-user-solid"
+    unfilled_classes = for _ <- 2..filled_pins//-1, do: "hero-user"
 
     assigns =
       assigns
       |> assign(:weight, car_weight)
+      |> assign(:seated_capacity, seated_capacity)
       |> assign(:passengers, passengers)
+      |> assign(:pin_classes, filled_classes ++ unfilled_classes)
+      |> assign(:crowding, crowding)
 
     ~H"""
     <tr>
       <td class="pl-2 pr-2"><%= @car["car_nbr"] %></td>
       <td class="pl-2 pr-2"><%= @passengers %></td>
+      <td class="pl-2 pr-2">
+        <span class="inline">
+          <span :for={class <- @pin_classes} class={"#{class} inline-block w-5"} />
+        </span>
+        <%= @crowding %>
+      </td>
       <td class="pl-2 pr-2"><%= @weight * 10 %></td>
     </tr>
     """
@@ -161,12 +182,13 @@ defmodule SubwaysideUiWeb.TrainsLive do
         _ -> nil
       end
 
+    :timer.send_interval(1_000, :now)
+
     socket = assign(socket, :train_id, train_id)
     socket = set_now(socket)
-    socket = set_trains(socket)
 
-    :timer.send_interval(1_000, :now)
-    SubwaysideUi.TrainStatus.listen(SubwaysideUi.TrainStatus, self())
+    trains = SubwaysideUi.TrainStatus.listen(SubwaysideUi.TrainStatus, self())
+    socket = set_trains(socket, trains)
 
     {:ok, socket}
   end
@@ -185,8 +207,8 @@ defmodule SubwaysideUiWeb.TrainsLive do
     assign(socket, :now, DateTime.utc_now())
   end
 
-  defp set_trains(socket) do
-    trains = SubwaysideUi.TrainStatus.trains(SubwaysideUi.TrainStatus)
+  defp set_trains(socket, trains \\ nil) do
+    trains = trains || SubwaysideUi.TrainStatus.trains(SubwaysideUi.TrainStatus)
 
     trains =
       if train_id = socket.assigns.train_id do
