@@ -2,6 +2,15 @@ defmodule SubwaysideUiWeb.TrainsLive do
   use SubwaysideUiWeb, :live_view
 
   def render(assigns) do
+    trains =
+      if assigns.only_valid_gps? do
+        Enum.filter(assigns.trains, & &1["gpv"])
+      else
+        assigns.trains
+      end
+
+    assigns = assign(assigns, :trains, trains)
+
     ~H"""
     <h2 :if={@trains == []}>
       <svg
@@ -21,6 +30,20 @@ defmodule SubwaysideUiWeb.TrainsLive do
       </svg>
       Loading trains...
     </h2>
+    <div :if={@trains != [] and is_nil(@train_id)}>
+      <div>
+        <input
+          type="checkbox"
+          id="valid-gps"
+          checked={@only_valid_gps?}
+          name="valid-gps"
+          value="true"
+          phx-click="toggle-valid-gps"
+        />
+        <label for="valid-gps">Only show trains with valid GPS?</label>
+      </div>
+      <div>Train count: <%= length(@trains) %></div>
+    </div>
     <.train :for={train <- @trains} train={train} now={@now} filtered?={!is_nil(@train_id)} />
     """
   end
@@ -184,13 +207,21 @@ defmodule SubwaysideUiWeb.TrainsLive do
 
     :timer.send_interval(1_000, :now)
 
-    socket = assign(socket, :train_id, train_id)
+    socket =
+      socket
+      |> assign(:train_id, train_id)
+      |> assign(:only_valid_gps?, false)
+
     socket = set_now(socket)
 
     trains = SubwaysideUi.TrainStatus.listen(SubwaysideUi.TrainStatus, self())
     socket = set_trains(socket, trains)
 
     {:ok, socket}
+  end
+
+  def handle_event("toggle-valid-gps", _, socket) do
+    {:noreply, assign(socket, :only_valid_gps?, !socket.assigns.only_valid_gps?)}
   end
 
   def handle_info(:now, socket) do
