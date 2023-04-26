@@ -16,6 +16,8 @@ defmodule SubwaysideUi.StageSupervisor do
   def init([]) do
     children = [
       {SubwaysideUi.KinesisSource, name: SubwaysideUi.KinesisSource},
+      {SubwaysideUi.MinimumWeight,
+       name: SubwaysideUi.MinimumWeight, subscribe_to: [SubwaysideUi.KinesisSource]},
       {SubwaysideUi.TrainStatus,
        name: SubwaysideUi.TrainStatus, subscribe_to: [SubwaysideUi.KinesisSource]}
     ]

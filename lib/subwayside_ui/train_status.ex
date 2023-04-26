@@ -73,7 +73,7 @@ defmodule SubwaysideUi.TrainStatus do
   defp clear_stale_trains(state) do
     old_iso =
       DateTime.utc_now()
-      |> DateTime.add(-1, :hour)
+      |> DateTime.add(-30, :minute)
       |> DateTime.to_iso8601()
 
     trains =

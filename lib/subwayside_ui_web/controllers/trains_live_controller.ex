@@ -42,17 +42,13 @@ defmodule SubwaysideUiWeb.TrainsLiveController do
         <thead>
           <tr>
             <th class="p-2">Car No.</th>
-            <th class="p-2">Weight 1 (#)</th>
-            <th class="p-2">Weight 2 (#)</th>
+            <th class="p-2">Passengers</th>
+            <th class="p-2">Weight (#)</th>
           </tr>
         </thead>
         <tbody>
           <%= for ci <- @train["car_infos"] do %>
-            <tr>
-              <td class="p-2"><%= ci["car_nbr"] %></td>
-              <td class="p-2"><%= ci["load_weight_sig_1"] * 10 %></td>
-              <td class="p-2"><%= ci["load_weight_sig_2"] * 10 %></td>
-            </tr>
+            <.car car={ci} />
           <% end %>
         </tbody>
       </table>
@@ -60,6 +56,31 @@ defmodule SubwaysideUiWeb.TrainsLiveController do
         <%= Jason.encode_to_iodata!(@train, pretty: true) %>
       </pre>
     </div>
+    """
+  end
+
+  def car(assigns) do
+    car = assigns.car
+
+    {:ok, car_base_weight} =
+      SubwaysideUi.MinimumWeight.weight(SubwaysideUi.MinimumWeight, car["car_nbr"])
+
+    car_weight = SubwaysideUi.car_weight(car["load_weight_sig_1"], car["load_weight_sig_2"])
+    # weight is in 10s of pounds, and CRRC assumes that passengers are 155
+    # pounds. We round down so that people can be pleasantly surprised.
+    passengers = div(car_weight - car_base_weight, 15)
+
+    assigns =
+      assigns
+      |> assign(:weight, car_weight)
+      |> assign(:passengers, passengers)
+
+    ~H"""
+    <tr>
+      <td class="p-2"><%= @car["car_nbr"] %></td>
+      <td class="p-2"><%= @passengers %></td>
+      <td class="p-2"><%= @weight * 10 %></td>
+    </tr>
     """
   end
 
@@ -93,7 +114,7 @@ defmodule SubwaysideUiWeb.TrainsLiveController do
     sorted_trains =
       trains
       |> Map.values()
-      |> Enum.sort_by(&Map.get(&1, "leader_car_nbr"))
+      |> Enum.sort_by(&Map.get(&1, "gps_latitude"), :desc)
 
     assign(socket, :trains, sorted_trains)
   end
