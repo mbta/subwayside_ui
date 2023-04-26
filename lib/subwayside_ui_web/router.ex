@@ -29,7 +29,8 @@ defmodule SubwaysideUiWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
-    live "/trains", TrainsLiveController
+    live "/trains", TrainsLive
+    live "/trains/:train_id", TrainsLive, :show
   end
 
   # Other scopes may use custom stacks.
