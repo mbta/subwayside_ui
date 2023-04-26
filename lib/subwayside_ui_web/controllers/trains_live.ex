@@ -9,6 +9,13 @@ defmodule SubwaysideUiWeb.TrainsLive do
         assigns.trains
       end
 
+    trains =
+      if assigns.only_full_consist? do
+        Enum.filter(assigns.trains, &(&1["number_of_cars"] == 6))
+      else
+        trains
+      end
+
     assigns = assign(assigns, :trains, trains)
 
     ~H"""
@@ -37,10 +44,19 @@ defmodule SubwaysideUiWeb.TrainsLive do
           id="valid-gps"
           checked={@only_valid_gps?}
           name="valid-gps"
-          value="true"
           phx-click="toggle-valid-gps"
         />
-        <label for="valid-gps">Only show trains with valid GPS?</label>
+        <label for="valid-gps">Only show trains with valid GPS</label>
+      </div>
+      <div>
+        <input
+          type="checkbox"
+          id="full-consist"
+          checked={@only_full_consist?}
+          name="full-consit"
+          phx-click="toggle-full-consist"
+        />
+        <label for="full-consist">Only show trains with a 6-car consist</label>
       </div>
       <div>Train count: <%= length(@trains) %></div>
     </div>
@@ -211,6 +227,7 @@ defmodule SubwaysideUiWeb.TrainsLive do
       socket
       |> assign(:train_id, train_id)
       |> assign(:only_valid_gps?, false)
+      |> assign(:only_full_consist?, true)
 
     socket = set_now(socket)
 
