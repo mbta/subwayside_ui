@@ -55,6 +55,10 @@ config :subwayside_ui, SubwaysideUiWeb.Endpoint,
 # Enable dev routes for dashboard and mailbox
 config :subwayside_ui, dev_routes: true
 
+config :subwayside_ui, SubwaysideUi.KinesisSource,
+  stream_name: "ctd-subwayside",
+  fetch_interval_ms: 1000
+
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"
 
@@ -64,3 +68,14 @@ config :phoenix, :stacktrace_depth, 20
 
 # Initialize plugs at runtime for faster development compilation
 config :phoenix, :plug_init_mode, :runtime
+
+config :ex_aws,
+  access_key_id: "test",
+  secret_access_key: "test",
+  region: "us-east-1"
+
+config :ex_aws, :kinesis,
+  scheme: "http://",
+  host: "localhost",
+  port: 4566,
+  region: "us-east-1"

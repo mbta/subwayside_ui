@@ -15,9 +15,12 @@ defmodule SubwaysideUi.Application do
       # Start Finch
       {Finch, name: SubwaysideUi.Finch},
       # Start the Endpoint (http/https)
-      SubwaysideUiWeb.Endpoint
+      SubwaysideUiWeb.Endpoint,
       # Start a worker by calling: SubwaysideUi.Worker.start_link(arg)
-      # {SubwaysideUi.Worker, arg}
+      # {SubwaysideUi.Worker, arg},
+      # SubwaysideUi.MinimumCarWeight,
+      # SubwaysideUi.TrainStatus,
+      SubwaysideUi.KinesisSource
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
