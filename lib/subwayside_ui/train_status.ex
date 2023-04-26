@@ -14,7 +14,11 @@ defmodule SubwaysideUi.TrainStatus do
     GenStage.call(server, :trains)
   end
 
-  defstruct trains: %{}
+  def listen(server, pid) do
+    GenStage.cast(server, {:listen, pid})
+  end
+
+  defstruct trains: %{}, listeners: %{}
 
   @impl GenStage
   def init(opts) do
@@ -29,8 +33,27 @@ defmodule SubwaysideUi.TrainStatus do
   end
 
   @impl GenStage
+  def handle_cast({:listen, pid}, state) do
+    monitor = Process.monitor(pid)
+    state = %{state | listeners: Map.put(state.listeners, pid, monitor)}
+    {:noreply, [], state}
+  end
+
+  @impl GenStage
+  def handle_info({:DOWN, _monitor, :process, pid, _reason}, state) do
+    state = %{state | listeners: Map.delete(state.listeners, pid)}
+    {:noreply, [], state}
+  end
+
+  @impl GenStage
   def handle_events(events, _from, state) do
     state = Enum.reduce(events, state, &update_state/2)
+
+    for pid <- Map.keys(state.listeners) do
+      Logger.info("#{__MODULE__} notifying #{inspect(pid)}")
+      send(pid, :new_trains)
+    end
+
     {:noreply, [], state}
   end
 

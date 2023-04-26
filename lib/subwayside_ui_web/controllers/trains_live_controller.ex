@@ -12,7 +12,22 @@ defmodule SubwaysideUiWeb.TrainsLiveController do
   def train(assigns) do
     ~H"""
     <div class="mb-8">
-      <div class="text-lg"><%= @train["leader_car_nbr"] %></div>
+      <span class="text-lg"><%= @train["leader_car_nbr"] %></span>
+      <span class="text-sm">(last updated <%= @train["created_date"] %>)</span>
+      <%= if @train["destination_loc"] do %>
+        <table>
+          <tr>
+            <th>Previous Stop</th>
+            <th>Next Stop</th>
+            <th>Destination</th>
+          </tr>
+          <tr>
+            <td><%= @train["present_loc"]["name"] %></td>
+            <td><%= @train["next_loc"]["name"] %></td>
+            <td><%= @train["destination_loc"]["name"] %></td>
+          </tr>
+        </table>
+      <% end %>
       <div>
         <%= for ci <- @train["car_infos"] do %>
           <div>
@@ -28,6 +43,19 @@ defmodule SubwaysideUiWeb.TrainsLiveController do
   end
 
   def mount(_params, _assigns, socket) do
+    socket = set_trains(socket)
+
+    SubwaysideUi.TrainStatus.listen(SubwaysideUi.TrainStatus, self())
+
+    {:ok, socket}
+  end
+
+  def handle_info(:new_trains, socket) do
+    socket = set_trains(socket)
+    {:noreply, socket}
+  end
+
+  defp set_trains(socket) do
     trains = SubwaysideUi.TrainStatus.trains(SubwaysideUi.TrainStatus)
 
     sorted_trains =
@@ -35,6 +63,6 @@ defmodule SubwaysideUiWeb.TrainsLiveController do
       |> Map.values()
       |> Enum.sort_by(&Map.get(&1, "leader_car_nbr"))
 
-    {:ok, assign(socket, :trains, sorted_trains)}
+    assign(socket, :trains, sorted_trains)
   end
 end
