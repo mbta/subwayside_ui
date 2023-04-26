@@ -1,0 +1,48 @@
+defmodule SubwaysideUi.TrainStatus do
+  @moduledoc """
+  Maintains the state of each train.
+  """
+  use GenStage
+  require Logger
+
+  def start_link(opts) do
+    start_link_opts = Keyword.take(opts, [:name])
+    GenStage.start_link(__MODULE__, opts, start_link_opts)
+  end
+
+  def trains(server) do
+    GenStage.call(server, :trains)
+  end
+
+  defstruct trains: %{}
+
+  @impl GenStage
+  def init(opts) do
+    state = %__MODULE__{}
+    init_opts = Keyword.take(opts, [:subscribe_to])
+    {:consumer, state, init_opts}
+  end
+
+  @impl GenStage
+  def handle_call(:trains, _from, state) do
+    {:reply, state.trains, [], state}
+  end
+
+  @impl GenStage
+  def handle_events(events, _from, state) do
+    state = Enum.reduce(events, state, &update_state/2)
+    {:noreply, [], state}
+  end
+
+  defp update_state(event, state) do
+    %{
+      "data" =>
+        %{
+          "train_id" => train_id
+        } = data
+    } = event
+
+    Logger.info("#{__MODULE__} updated train_id=#{train_id}")
+    %{state | trains: Map.put(state.trains, train_id, data)}
+  end
+end

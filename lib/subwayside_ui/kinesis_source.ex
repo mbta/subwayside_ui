@@ -2,21 +2,37 @@ defmodule SubwaysideUi.KinesisSource do
   @moduledoc """
   Pulls events from the Kinesis stream for sending to the rest of SubwaysideUi.
   """
-  use GenServer
+  use GenStage
   require Logger
 
-  def start_link(_) do
-    GenServer.start_link(__MODULE__, [])
+  def start_link(opts) do
+    start_link_opts = Keyword.take(opts, [:name])
+    GenStage.start_link(__MODULE__, [], start_link_opts)
   end
 
-  defstruct shard_iterator: nil
+  defstruct shard_iterator: nil, demand: 0
 
+  @impl GenStage
   def init(_) do
     state = %__MODULE__{}
-    {:ok, state, {:continue, :fetch_iterator}}
+    send(self(), :fetch_iterator)
+    {:producer, state, dispatcher: GenStage.BroadcastDispatcher}
   end
 
-  def handle_continue(:fetch_iterator, state) do
+  @impl GenStage
+  def handle_demand(demand, state) do
+    old_demand = state.demand
+    state = %{state | demand: old_demand + demand}
+
+    if old_demand == 0 do
+      send(self(), :timeout)
+    end
+
+    {:noreply, [], state}
+  end
+
+  @impl GenStage
+  def handle_info(:fetch_iterator, state) do
     stream = ExAws.request!(ExAws.Kinesis.describe_stream(stream_name()))["StreamDescription"]
     shard_id = List.first(stream["Shards"])["ShardId"]
 
@@ -30,32 +46,43 @@ defmodule SubwaysideUi.KinesisSource do
       )["ShardIterator"]
 
     state = %{state | shard_iterator: shard_iterator}
-    send(self(), :timeout)
-    {:noreply, state}
+    {:noreply, [], state}
   end
 
   def handle_info(:timeout, state) do
     response = ExAws.request!(ExAws.Kinesis.get_records(state.shard_iterator))
-    state = %{state | shard_iterator: response["NextShardIterator"]}
+    old_demand = state.demand
 
     events =
       response["Records"]
       |> Enum.flat_map(&(&1["Data"] |> :base64.decode() |> Jason.decode!()))
 
+    events_length = length(events)
+
     if response["Records"] != [] do
       Logger.info(
-        "#{__MODULE__} received records=#{length(response["Records"])} events=#{length(events)}"
+        "#{__MODULE__} received records=#{length(response["Records"])} events=#{events_length}"
       )
     end
 
-    timeout =
-      if response["MillisBehindLatest"] == 0 do
-        fetch_interval_ms()
-      else
-        0
-      end
+    state = %{
+      state
+      | shard_iterator: response["NextShardIterator"],
+        demand: max(0, old_demand - events_length)
+    }
 
-    {:noreply, state, timeout}
+    if state.demand > 0 do
+      timeout =
+        if response["MillisBehindLatest"] == 0 do
+          fetch_interval_ms()
+        else
+          0
+        end
+
+      Process.send_after(self(), :timeout, timeout)
+    end
+
+    {:noreply, events, state}
   end
 
   def stream_name do

@@ -18,9 +18,7 @@ defmodule SubwaysideUi.Application do
       SubwaysideUiWeb.Endpoint,
       # Start a worker by calling: SubwaysideUi.Worker.start_link(arg)
       # {SubwaysideUi.Worker, arg},
-      # SubwaysideUi.MinimumCarWeight,
-      # SubwaysideUi.TrainStatus,
-      SubwaysideUi.KinesisSource
+      SubwaysideUi.StageSupervisor
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

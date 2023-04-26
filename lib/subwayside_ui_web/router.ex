@@ -5,9 +5,11 @@ defmodule SubwaysideUiWeb.Router do
     @content_security_policy Enum.join(
                                [
                                  "default-src 'none'",
-                                 "img-src 'self' cdn.mbta.com",
-                                 "style-src 'self'",
-                                 "script-src 'self'"
+                                 "img-src 'self' data: cdn.mbta.com",
+                                 "style-src 'self' 'unsafe-inline'",
+                                 "script-src 'self' 'unsafe-inline'",
+                                 "connect-src 'self'",
+                                 "frame-src 'self'"
                                ],
                                "; "
                              )
@@ -27,6 +29,7 @@ defmodule SubwaysideUiWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+    live "/trains", TrainsLiveController
   end
 
   # Other scopes may use custom stacks.

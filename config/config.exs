@@ -7,6 +7,8 @@
 # General application configuration
 import Config
 
+config :subwayside_ui, SubwaysideUi.StageSupervisor, start?: true
+
 # Configures the endpoint
 config :subwayside_ui, SubwaysideUiWeb.Endpoint,
   url: [host: "localhost"],

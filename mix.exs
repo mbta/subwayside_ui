@@ -54,6 +54,7 @@ defmodule SubwaysideUi.MixProject do
       {:plug_cowboy, "~> 2.5"},
       {:ex_aws, "~> 2.4"},
       {:ex_aws_kinesis, "~> 2.0"},
+      {:gen_stage, "~> 1.2"},
       {:sobelow, "~> 0.12.2", only: [:dev], runtime: false},
       {:dialyxir, "~> 1.3", only: [:dev], runtime: false},
       {:credo, "~> 1.7", only: [:dev], runtime: false},
