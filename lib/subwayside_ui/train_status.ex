@@ -15,7 +15,7 @@ defmodule SubwaysideUi.TrainStatus do
   end
 
   def listen(server, pid) do
-    GenStage.cast(server, {:listen, pid})
+    GenStage.call(server, {:listen, pid})
   end
 
   defstruct trains: %{}, listeners: %{}
@@ -33,10 +33,10 @@ defmodule SubwaysideUi.TrainStatus do
   end
 
   @impl GenStage
-  def handle_cast({:listen, pid}, state) do
+  def handle_call({:listen, pid}, _from, state) do
     monitor = Process.monitor(pid)
     state = %{state | listeners: Map.put(state.listeners, pid, monitor)}
-    {:noreply, [], state}
+    {:reply, state.trains, [], state}
   end
 
   @impl GenStage
