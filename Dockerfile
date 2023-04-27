@@ -26,6 +26,7 @@ RUN mix do assets.setup, assets.build
 
 ADD lib lib
 ADD priv priv
+ADD config/runtime.exs config/
 
 RUN mix do compile, phx.digest, release
 
