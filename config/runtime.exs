@@ -49,5 +49,5 @@ if config_env() == :prod do
     secret_key_base: secret_key_base
 
   config :subwayside_ui, SubwaysideUi.KinesisSource,
-    stream_name: System.fetch_env("KINESIS_STREAM_NAME")
+    stream_name: System.fetch_env!("KINESIS_STREAM_NAME")
 end
