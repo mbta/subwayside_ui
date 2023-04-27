@@ -56,17 +56,14 @@ defmodule SubwaysideUi.TrainStatus do
   @impl GenStage
   def handle_events(events, _from, state) do
     now = DateTime.utc_now()
-
-    old_iso =
-      now
-      |> DateTime.add(-5, :minute)
-      |> DateTime.to_iso8601()
+    old = DateTime.add(now, -5, :minute)
+    old_iso = DateTime.to_iso8601(old)
 
     state =
       events
       |> Enum.filter(&(&1["time"] >= old_iso))
       |> Enum.reduce(state, &update_state/2)
-      |> clear_stale_trains(old_iso)
+      |> clear_stale_trains(old)
 
     if map_size(state.trains) > 0 do
       for pid <- Map.keys(state.listeners) do
@@ -79,23 +76,17 @@ defmodule SubwaysideUi.TrainStatus do
   end
 
   defp update_state(event, state) do
-    %{
-      "data" =>
-        %{
-          "train_id" => train_id,
-          "created_date" => created_date
-        } = data
-    } = event
+    train = SubwaysideUi.Train.from_json_map(event["data"])
 
-    Logger.info("#{__MODULE__} updated train_id=#{train_id} created_date=#{created_date}")
+    Logger.info("#{__MODULE__} updated train_id=#{train.id} created_date=#{train.created_date}")
 
-    %{state | trains: Map.put(state.trains, train_id, data)}
+    %{state | trains: Map.put(state.trains, train.id, train)}
   end
 
-  defp clear_stale_trains(state, old_iso) do
+  defp clear_stale_trains(state, old) do
     trains =
-      Map.filter(state.trains, fn {_key, value} ->
-        value["created_date"] >= old_iso
+      Map.filter(state.trains, fn {_key, train} ->
+        DateTime.compare(train.created_date, old) != :lt
       end)
 
     %{state | trains: trains}

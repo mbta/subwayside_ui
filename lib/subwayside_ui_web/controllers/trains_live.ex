@@ -4,14 +4,14 @@ defmodule SubwaysideUiWeb.TrainsLive do
   def render(assigns) do
     trains =
       if assigns.only_valid_gps? do
-        Enum.filter(assigns.trains, & &1["gpv"])
+        Enum.filter(assigns.trains, & &1.flags.gps_valid?)
       else
         assigns.trains
       end
 
     trains =
       if assigns.only_full_consist? do
-        Enum.filter(assigns.trains, &(&1["number_of_cars"] == 6))
+        Enum.filter(assigns.trains, &(&1.number_of_cars == 6))
       else
         trains
       end
@@ -65,50 +65,53 @@ defmodule SubwaysideUiWeb.TrainsLive do
   end
 
   def train(assigns) do
-    {:ok, created_date, _} = DateTime.from_iso8601(assigns.train["created_date"])
-    latency = DateTime.diff(assigns.now, created_date, :second)
+    train = assigns.train
+    latency = DateTime.diff(assigns.now, train.created_date, :second)
     assigns = assign(assigns, :latency, latency)
 
     ~H"""
     <div class="mb-8">
-      <a class="text-blue-600" href={~p[/trains/#{@train["train_id"]}]}>
+      <a class="text-blue-600" href={~p[/trains/#{@train.id}]}>
         <h1 class="text-3xl inline pl-2">
-          <%= @train["leader_car_nbr"] %>
+          <%= @train.leader_car_nbr %>
         </h1>
       </a>
       <span class="text-sm">
-        (last updated <span title={@train["created_date"]}><%= @latency %>s ago</span>)
+        (last updated <span title={@train.created_date}><%= @latency %>s ago</span>)
       </span>
       <table class="table-auto ml-2">
         <tbody>
-          <tr :if={@train["route_name"]}>
+          <tr :if={@train.route_name}>
             <td class="font-bold">Route</td>
-            <td><%= @train["route_name"] %></td>
+            <td><%= @train.route_name %></td>
           </tr>
-          <tr :if={@train["active_car_nbr"] != "0000"}>
+          <tr :if={@train.active_car_nbr != "0000"}>
             <td class="font-bold">Active Car No.</td>
-            <td><%= @train["active_car_nbr"] %></td>
+            <td><%= @train.active_car_nbr %></td>
           </tr>
-          <tr :if={@train["spv"]}>
+          <tr :if={is_float(@train.speed)}>
             <td class="font-bold">Speed (MPH)</td>
-            <td><%= @train["train_speed"] %></td>
+            <td><%= @train.speed %></td>
           </tr>
-          <tr :if={@train["gpv"]}>
+          <tr :if={is_float(@train.gps_latitude)}>
             <td class="font-bold">Latitude</td>
-            <td><%= @train["gps_latitude"] %></td>
+            <td><%= @train.gps_latitude %></td>
           </tr>
-          <tr :if={@train["gpv"]}>
+          <tr :if={is_float(@train.gps_longitude)}>
             <td class="font-bold">Longitude</td>
-            <td><%= @train["gps_longitude"] %></td>
+            <td><%= @train.gps_longitude %></td>
           </tr>
         </tbody>
       </table>
-      <table :if={is_map(@train["destination_loc"]) and @train["odv"]} class="table-auto">
+      <table
+        :if={is_map(@train.destination_loc) and @train.flags.destination_valid?}
+        class="table-auto"
+      >
         <thead>
           <tr>
             <th class="p-2 pb-0">
-              <span :if={@train["running_distance"] == 0.0}>At Stop</span>
-              <span :if={@train["running_distance"] != 0.0}>Previous Stop</span>
+              <span :if={@train.running_distance == 0.0}>At Stop</span>
+              <span :if={@train.running_distance != 0.0}>Previous Stop</span>
             </th>
             <th></th>
             <th class="p-2 pb-0">Next Stop</th>
@@ -118,17 +121,17 @@ defmodule SubwaysideUiWeb.TrainsLive do
         <thead>
           <tr>
             <td class="pl-2 pr-2">
-              <%= @train["present_loc"]["name"] %>
+              <%= @train.previous_loc.name %>
             </td>
             <td>
-              <span :if={@train["running_distance"] != 0.0}>
+              <span :if={@train.running_distance != 0.0}>
                 <span class="hero-arrow-small-right" />
-                <%= Float.round(@train["running_distance"], 2) %> mi
+                <%= Float.round(@train.running_distance, 2) %> mi
                 <span class="hero-arrow-small-right" />
               </span>
             </td>
-            <td class="pl-2 pr-2"><%= @train["next_loc"]["name"] %></td>
-            <td class="pl-2 pr-2"><%= @train["destination_loc"]["name"] %></td>
+            <td class="pl-2 pr-2"><%= @train.next_loc.name %></td>
+            <td class="pl-2 pr-2"><%= @train.destination_loc.name %></td>
           </tr>
         </thead>
       </table>
@@ -142,26 +145,26 @@ defmodule SubwaysideUiWeb.TrainsLive do
           </tr>
         </thead>
         <tbody>
-          <.car :for={ci <- @train["car_infos"]} car={ci} />
+          <.car :for={car <- @train.cars} car={car} />
         </tbody>
       </table>
 
       <div :if={@filtered?}>
         <h2 class="text-md">Flags</h2>
         <ul class="list-disc">
-          <li :if={@train["train_critical"] == "1"}>Critical!</li>
-          <li :if={@train["shop_mode_code"] == "1"}>Shop mode</li>
-          <li :if={@train["hbv"]}>Heartbeat valid</li>
-          <li :if={@train["hbl"]}>HBL, should never happen!</li>
-          <li :if={@train["tdv"]}>Transmission datetime valid</li>
-          <li :if={@train["tsc"]}>Time sync with WSS (invalid)</li>
-          <li :if={!@train["tsc"]}>Time sync with GPS</li>
-          <li :if={@train["odv"]}>Operation data (destination) valid</li>
-          <li :if={@train["gpv"]}>GPS valid</li>
-          <li :if={@train["spv"]}>Speed valid</li>
+          <li :if={@train.flags.critical?}>Critical!</li>
+          <li :if={@train.flags.shop_mode?}>Shop mode</li>
+          <li :if={@train.flags.heartbeat_valid?}>Heartbeat valid</li>
+          <li :if={@train.flags.hbl}>HBL, should never happen!</li>
+          <li :if={@train.flags.datetime_valid?}>Transmission datetime valid</li>
+          <li :if={@train.flags.time_sync_wss?}>Time sync with WSS (invalid)</li>
+          <li :if={@train.flags.time_sync_gps?}>Time sync with GPS</li>
+          <li :if={@train.flags.destination_valid?}>Operation data (destination) valid</li>
+          <li :if={@train.flags.gps_valid?}>GPS valid</li>
+          <li :if={@train.flags.speed_valid?}>Speed valid</li>
         </ul>
         <h2>Raw data</h2>
-        <pre><%= Jason.encode_to_iodata!(@train, pretty: true) %></pre>
+        <pre><%= Jason.encode_to_iodata!(@train.raw, pretty: true) %></pre>
       </div>
     </div>
     """
@@ -171,18 +174,17 @@ defmodule SubwaysideUiWeb.TrainsLive do
     car = assigns.car
 
     {:ok, car_base_weight} =
-      SubwaysideUi.MinimumWeight.weight(SubwaysideUi.MinimumWeight, car["car_nbr"])
+      SubwaysideUi.MinimumWeight.weight(SubwaysideUi.MinimumWeight, car.car_nbr)
 
-    car_weight = SubwaysideUi.car_weight(car["load_weight_sig_1"], car["load_weight_sig_2"])
-    # weight is in 10s of pounds, and CRRC assumes that passengers are 155
+    # CRRC assumes that passengers are 155
     # pounds. We round down so that people can be pleasantly surprised.
-    passengers = div(car_weight - car_base_weight, 15)
-    seated_capacity = SubwaysideUi.car_aw1(car)
+    passengers = div(car.weight - car_base_weight, 155)
+    seated_capacity = SubwaysideUi.Car.aw1(car)
 
     {filled_pins, crowding} =
       cond do
         passengers <= seated_capacity -> {1, "Not crowded"}
-        passengers <= SubwaysideUi.car_aw2(car) -> {2, "Some crowding"}
+        passengers <= SubwaysideUi.Car.aw2(car) -> {2, "Some crowding"}
         true -> {3, "Crowded"}
       end
 
@@ -191,7 +193,7 @@ defmodule SubwaysideUiWeb.TrainsLive do
 
     assigns =
       assigns
-      |> assign(:weight, car_weight)
+      |> assign(:weight, car.weight)
       |> assign(:seated_capacity, seated_capacity)
       |> assign(:passengers, passengers)
       |> assign(:pin_classes, filled_classes ++ unfilled_classes)
@@ -199,7 +201,7 @@ defmodule SubwaysideUiWeb.TrainsLive do
 
     ~H"""
     <tr>
-      <td class="pl-2 pr-2"><%= @car["car_nbr"] %></td>
+      <td class="pl-2 pr-2"><%= @car.car_nbr %></td>
       <td class="pl-2 pr-2"><%= @passengers %></td>
       <td class="pl-2 pr-2">
         <span class="inline">
@@ -207,7 +209,7 @@ defmodule SubwaysideUiWeb.TrainsLive do
         </span>
         <%= @crowding %>
       </td>
-      <td class="pl-2 pr-2"><%= @weight * 10 %></td>
+      <td class="pl-2 pr-2"><%= @weight %></td>
     </tr>
     """
   end
@@ -268,7 +270,7 @@ defmodule SubwaysideUiWeb.TrainsLive do
       else
         trains
         |> Map.values()
-        |> Enum.sort_by(&Map.get(&1, "gps_latitude"), :desc)
+        |> Enum.sort_by(& &1.gps_latitude, :desc)
       end
 
     assign(socket, :trains, trains)
