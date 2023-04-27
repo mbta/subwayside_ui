@@ -51,6 +51,7 @@ defmodule SubwaysideUi.MixProject do
       {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 0.20"},
       {:jason, "~> 1.2"},
+      {:json_formatter, "~> 0.2.0", only: [:dev], runtime: false},
       {:plug_cowboy, "~> 2.5"},
       {:ex_aws, "~> 2.4"},
       {:ex_aws_kinesis, "~> 2.0"},
