@@ -1,6 +1,12 @@
 defmodule SubwaysideUiWeb.Router do
   use SubwaysideUiWeb, :router
 
+  pipeline :secure do
+    if secure_pipeline = Application.compile_env(:subwayside_ui, [__MODULE__, :secure_pipeline]) do
+      plug(Plug.SSL, secure_pipeline)
+    end
+  end
+
   pipeline :browser do
     @content_security_policy Enum.join(
                                [
@@ -32,7 +38,7 @@ defmodule SubwaysideUiWeb.Router do
   end
 
   scope "/", SubwaysideUiWeb do
-    pipe_through :browser
+    pipe_through [:secure, :browser]
 
     get "/", PageController, :home
     live "/trains", TrainsLive
