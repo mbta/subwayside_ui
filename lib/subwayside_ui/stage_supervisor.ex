@@ -20,7 +20,8 @@ defmodule SubwaysideUi.StageSupervisor do
     children = [
       {SubwaysideUi.KinesisSource, name: SubwaysideUi.KinesisSource},
       {SubwaysideUi.MinimumWeight, name: SubwaysideUi.MinimumWeight, subscribe_to: subscribe_to},
-      {SubwaysideUi.TrainStatus, name: SubwaysideUi.TrainStatus, subscribe_to: subscribe_to}
+      {SubwaysideUi.TrainStatus, name: SubwaysideUi.TrainStatus, subscribe_to: subscribe_to},
+      SubwaysideUi.CrowdingLogger
     ]
 
     opts = [

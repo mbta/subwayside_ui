@@ -12,6 +12,7 @@ defmodule SubwaysideUi.TrainTest do
                leader_car_nbr: "1468",
                number_of_cars: 6,
                created_date: ~U[2023-04-27 13:56:15.970000Z],
+               receive_date: ~U[2023-04-27 13:56:28.420999Z],
                route_name: "1002",
                active_car_nbr: nil,
                speed: 0.0,

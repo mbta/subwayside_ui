@@ -11,6 +11,7 @@ defmodule SubwaysideUi.Train do
     :leader_car_nbr,
     :number_of_cars,
     :created_date,
+    :receive_date,
     :route_name,
     :active_car_nbr,
     :speed,
@@ -57,6 +58,7 @@ defmodule SubwaysideUi.Train do
   @spec from_json_map(map) :: t()
   def from_json_map(%{} = map) do
     {:ok, created_date, _} = DateTime.from_iso8601(map["created_date"])
+    {:ok, receive_date, _} = DateTime.from_iso8601(map["receive_date"])
 
     flags = %Flags{
       critical?: map["train_critical"] == "1",
@@ -77,6 +79,7 @@ defmodule SubwaysideUi.Train do
       leader_car_nbr: map["leader_car_nbr"],
       number_of_cars: map["number_of_cars"],
       created_date: created_date,
+      receive_date: receive_date,
       route_name: map["route_name"],
       active_car_nbr: if(map["active_car_nbr"] != "0000", do: map["active_car_nbr"]),
       speed: if(flags.speed_valid?, do: map["train_speed"]),
