@@ -12,8 +12,6 @@ defmodule SubwaysideUi.Application do
       SubwaysideUiWeb.Telemetry,
       # Start the PubSub system
       {Phoenix.PubSub, name: SubwaysideUi.PubSub},
-      # Start Finch
-      {Finch, name: SubwaysideUi.Finch},
       # Start the Endpoint (http/https)
       SubwaysideUiWeb.Endpoint,
       # Start a worker by calling: SubwaysideUi.Worker.start_link(arg)
