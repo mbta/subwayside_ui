@@ -35,7 +35,20 @@ defmodule SubwaysideUiWeb.TrainsLive do
         >
         </path>
       </svg>
-      Loading trains...
+      Loading trains in the background...
+      <div class="pt-8" style="width:100%;height:0;padding-bottom:138%;position:relative;">
+        <iframe
+          src="https://giphy.com/embed/l1g3RddMFNWNcJ1wiD"
+          width="100%"
+          height="100%"
+          style="position:absolute"
+          frameBorder="0"
+          class="giphy-embed"
+          allowFullScreen
+        >
+        </iframe>
+      </div>
+      <p><a href="https://giphy.com/gifs/design-loop-l1g3RddMFNWNcJ1wiD">via GIPHY</a></p>
     </h2>
     <div :if={@trains != [] and is_nil(@train_id)}>
       <div>
