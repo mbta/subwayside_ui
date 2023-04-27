@@ -14,12 +14,13 @@ defmodule SubwaysideUi.StageSupervisor do
 
   @impl Supervisor
   def init([]) do
+    max_demand = 10_000
+    subscribe_to = [{SubwaysideUi.KinesisSource, max_demand: max_demand}]
+
     children = [
       {SubwaysideUi.KinesisSource, name: SubwaysideUi.KinesisSource},
-      {SubwaysideUi.MinimumWeight,
-       name: SubwaysideUi.MinimumWeight, subscribe_to: [SubwaysideUi.KinesisSource]},
-      {SubwaysideUi.TrainStatus,
-       name: SubwaysideUi.TrainStatus, subscribe_to: [SubwaysideUi.KinesisSource]}
+      {SubwaysideUi.MinimumWeight, name: SubwaysideUi.MinimumWeight, subscribe_to: subscribe_to},
+      {SubwaysideUi.TrainStatus, name: SubwaysideUi.TrainStatus, subscribe_to: subscribe_to}
     ]
 
     opts = [

@@ -50,7 +50,8 @@ defmodule SubwaysideUi.KinesisSource do
   end
 
   def handle_info(:timeout, state) do
-    response = ExAws.request!(ExAws.Kinesis.get_records(state.shard_iterator))
+    limit = min(state.demand, 10_000)
+    response = ExAws.request!(ExAws.Kinesis.get_records(state.shard_iterator, limit: limit))
     old_demand = state.demand
 
     events =
@@ -59,16 +60,18 @@ defmodule SubwaysideUi.KinesisSource do
 
     events_length = length(events)
 
+    demand = max(0, old_demand - events_length)
+
     if response["Records"] != [] do
       Logger.info(
-        "#{__MODULE__} received records=#{length(response["Records"])} events=#{events_length}"
+        "#{__MODULE__} received records=#{length(response["Records"])} events=#{events_length} sec_behind=#{div(response["MillisBehindLatest"], 1000)} demand=#{demand}"
       )
     end
 
     state = %{
       state
       | shard_iterator: response["NextShardIterator"],
-        demand: max(0, old_demand - events_length)
+        demand: demand
     }
 
     if state.demand > 0 do
@@ -76,7 +79,7 @@ defmodule SubwaysideUi.KinesisSource do
         if response["MillisBehindLatest"] == 0 do
           fetch_interval_ms()
         else
-          0
+          250
         end
 
       Process.send_after(self(), :timeout, timeout)
