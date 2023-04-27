@@ -50,8 +50,6 @@ else
   config :subwayside_ui, SubwaysideUi.KinesisSource, stream_name: "ctd-subwayside"
 end
 
-config :subwayside_ui, SubwaysideUi.KinesisSource, fetch_interval_ms: 1000
-
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"
 

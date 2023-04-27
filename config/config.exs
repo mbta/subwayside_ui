@@ -9,6 +9,7 @@ import Config
 
 config :subwayside_ui, SubwaysideUi.StageSupervisor, start?: true
 
+config :subwayside_ui, SubwaysideUi.KinesisSource, fetch_interval_ms: 1000
 # Configures the endpoint
 config :subwayside_ui, SubwaysideUiWeb.Endpoint,
   url: [host: "localhost"],

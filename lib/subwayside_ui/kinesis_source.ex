@@ -51,7 +51,12 @@ defmodule SubwaysideUi.KinesisSource do
 
   def handle_info(:timeout, state) do
     limit = min(state.demand, 10_000)
-    response = ExAws.request!(ExAws.Kinesis.get_records(state.shard_iterator, limit: limit))
+    response = ExAws.request(ExAws.Kinesis.get_records(state.shard_iterator, limit: limit))
+    {events, state} = handle_response(response, state)
+    {:noreply, events, state}
+  end
+
+  def handle_response({:ok, response}, state) do
     old_demand = state.demand
 
     events =
@@ -85,14 +90,20 @@ defmodule SubwaysideUi.KinesisSource do
       Process.send_after(self(), :timeout, timeout)
     end
 
-    {:noreply, events, state}
+    {events, state}
+  end
+
+  def handle_response({:error, {"ProvisionedThroughputExceededException", warning}}, state) do
+    Logger.warn("#{__MODULE__} throughput exceeded warning=#{inspect(warning)}")
+    Process.send_after(self(), :timeout, fetch_interval_ms())
+    {[], state}
   end
 
   def stream_name do
-    Application.get_env(:subwayside_ui, __MODULE__)[:stream_name]
+    Keyword.fetch!(Application.get_env(:subwayside_ui, __MODULE__), :stream_name)
   end
 
   def fetch_interval_ms do
-    Application.get_env(:subwayside_ui, __MODULE__)[:fetch_interval_ms]
+    Keyword.fetch!(Application.get_env(:subwayside_ui, __MODULE__), :fetch_interval_ms)
   end
 end
