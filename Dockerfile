@@ -18,17 +18,14 @@ ENV MIX_ENV=prod
 ADD config/config.exs config/prod.exs config/
 ADD mix.exs mix.lock ./
 
-RUN mix do deps.get --only prod, deps.compile
+RUN mix do deps.get --only prod, deps.compile, assets.setup
 
 ADD assets assets
-
-RUN mix do assets.setup, assets.build
-
+ADD config/runtime.exs config/
 ADD lib lib
 ADD priv priv
-ADD config/runtime.exs config/
 
-RUN mix do compile, phx.digest, release
+RUN mix do assets.deploy, compile, release
 
 # The one the elixir image was built with
 FROM alpine:${ALPINE_VERSION}
