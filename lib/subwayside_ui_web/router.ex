@@ -25,6 +25,12 @@ defmodule SubwaysideUiWeb.Router do
     plug :accepts, ["json"]
   end
 
+  # Load balancer health check
+  # Exempt from auth checks and SSL redirects
+  scope "/", SubwaysideUiWeb do
+    get "/_health", HealthController, :index
+  end
+
   scope "/", SubwaysideUiWeb do
     pipe_through :browser
 

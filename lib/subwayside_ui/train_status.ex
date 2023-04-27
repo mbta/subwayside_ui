@@ -10,6 +10,10 @@ defmodule SubwaysideUi.TrainStatus do
     GenStage.start_link(__MODULE__, opts, start_link_opts)
   end
 
+  def has_trains?(server) do
+    GenStage.call(server, :has_trains?)
+  end
+
   def trains(server) do
     GenStage.call(server, :trains)
   end
@@ -28,6 +32,10 @@ defmodule SubwaysideUi.TrainStatus do
   end
 
   @impl GenStage
+  def handle_call(:has_trains?, _from, state) do
+    {:reply, state.trains != [], [], state}
+  end
+
   def handle_call(:trains, _from, state) do
     {:reply, state.trains, [], state}
   end
