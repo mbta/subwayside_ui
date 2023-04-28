@@ -256,6 +256,10 @@ defmodule SubwaysideUiWeb.TrainsLive do
     {:noreply, assign(socket, :only_valid_gps?, !socket.assigns.only_valid_gps?)}
   end
 
+  def handle_event("toggle-full-consist", _, socket) do
+    {:noreply, assign(socket, :only_full_consist?, !socket.assigns.only_full_consist?)}
+  end
+
   def handle_info(:now, socket) do
     socket = set_now(socket)
     {:noreply, socket}
