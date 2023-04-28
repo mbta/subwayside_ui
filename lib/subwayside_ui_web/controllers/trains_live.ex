@@ -3,17 +3,21 @@ defmodule SubwaysideUiWeb.TrainsLive do
 
   def render(assigns) do
     trains =
-      if assigns.only_valid_gps? do
-        Enum.filter(assigns.trains, & &1.flags.gps_valid?)
-      else
+      if assigns.train_id do
         assigns.trains
-      end
-
-    trains =
-      if assigns.only_full_consist? do
-        Enum.filter(assigns.trains, &(&1.number_of_cars == 6))
       else
-        trains
+        trains =
+          if assigns.only_valid_gps? do
+            Enum.filter(assigns.trains, & &1.flags.gps_valid?)
+          else
+            assigns.trains
+          end
+
+        if assigns.only_full_consist? do
+          Enum.filter(assigns.trains, &(&1.number_of_cars == 6))
+        else
+          trains
+        end
       end
 
     assigns = assign(assigns, :trains, trains)
