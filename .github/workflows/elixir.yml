@@ -53,7 +53,7 @@ jobs:
       - uses: mbta/actions/reshim-asdf@v1
         if: steps.deps-cache.outputs.cache-hit != 'true'
       - name: Install dependencies
-        run: mix deps.get
+        run: mix do deps.get, deps.compile
         if: steps.deps-cache.outputs.cache-hit != 'true'
 
   dev:
