@@ -56,12 +56,36 @@ defmodule SubwaysideUi.KinesisSource do
     {:noreply, events, state}
   end
 
+  def decode!("[" <> _rest = data) do
+    Jason.decode!(data)
+  end
+
+  def decode!("{" <> _rest = data) do
+    Jason.decode!(data)
+  end
+
+  def decode!(data) do
+    data
+    |> :zlib.unzip()
+    |> Jason.decode!()
+  end
+
   def handle_response({:ok, response}, state) do
     old_demand = state.demand
 
     events =
       response["Records"]
-      |> Enum.flat_map(&(&1["Data"] |> :base64.decode() |> Jason.decode!()))
+      |> Enum.flat_map(&(&1["Data"] |> :base64.decode() |> decode!()))
+
+    raw_byte_size =
+      response["Records"]
+      |> Enum.map(&byte_size(&1["Data"]))
+      |> Enum.sum()
+
+    decoded_byte_size =
+      response["Records"]
+      |> Enum.map(&byte_size(:base64.decode(&1["Data"])))
+      |> Enum.sum()
 
     events_length = length(events)
 
@@ -69,7 +93,7 @@ defmodule SubwaysideUi.KinesisSource do
 
     if response["Records"] != [] do
       Logger.info(
-        "#{__MODULE__} received records=#{length(response["Records"])} events=#{events_length} sec_behind=#{div(response["MillisBehindLatest"], 1000)} demand=#{demand}"
+        "#{__MODULE__} received raw_byte_size=#{raw_byte_size} decoded_byte_size=#{decoded_byte_size} records=#{length(response["Records"])} events=#{events_length} sec_behind=#{div(response["MillisBehindLatest"], 1000)} demand=#{demand}"
       )
     end
 
