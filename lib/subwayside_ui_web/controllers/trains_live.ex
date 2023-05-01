@@ -88,11 +88,11 @@ defmodule SubwaysideUiWeb.TrainsLive do
 
     ~H"""
     <div class="mb-8">
-      <a class="text-blue-600" href={~p[/trains/#{@train.id}]}>
+      <.link class="text-blue-600" navigate={~p[/trains/#{@train.id}]}>
         <h1 class="text-3xl inline pl-2">
           <%= @train.leader_car_nbr %>
         </h1>
-      </a>
+      </.link>
       <span class="text-sm">
         (last updated <span title={@train.created_date}><%= @latency %>s ago</span>)
       </span>
