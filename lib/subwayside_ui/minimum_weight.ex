@@ -42,7 +42,16 @@ defmodule SubwaysideUi.MinimumWeight do
 
   defp update_state({info, list}, state) do
     car = SubwaysideUi.Car.from_json_maps(info, list)
-    cars = Map.update(state.cars, car.car_nbr, car.weight, fn old -> min(old, car.weight) end)
-    %{state | cars: cars}
+
+    if car.weight > 50_000 do
+      cars = Map.update(state.cars, car.car_nbr, car.weight, fn old -> min(old, car.weight) end)
+      %{state | cars: cars}
+    else
+      Logger.warn(
+        "invalid weight car=#{car.car_nbr} info=#{Jason.encode!(info)} list=#{Jason.encode!(list)}"
+      )
+
+      state
+    end
   end
 end
