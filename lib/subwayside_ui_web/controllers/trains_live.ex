@@ -159,6 +159,7 @@ defmodule SubwaysideUiWeb.TrainsLive do
             <th class="p-2 pb-0">Passengers</th>
             <th class="p-2 pb-0">Crowding</th>
             <th class="p-2 pb-0">Weight (#)</th>
+            <th class="p-2 pb-0">Empty Weight (#)</th>
           </tr>
         </thead>
         <tbody>
@@ -211,6 +212,7 @@ defmodule SubwaysideUiWeb.TrainsLive do
     assigns =
       assigns
       |> assign(:weight, car.weight)
+      |> assign(:empty_weight, car_base_weight)
       |> assign(:seated_capacity, seated_capacity)
       |> assign(:passengers, passengers)
       |> assign(:pin_classes, filled_classes ++ unfilled_classes)
@@ -227,6 +229,7 @@ defmodule SubwaysideUiWeb.TrainsLive do
         <%= @crowding %>
       </td>
       <td class="pl-2 pr-2"><%= @weight %></td>
+      <td class="pl-2 pr-2"><%= @empty_weight %></td>
     </tr>
     """
   end
