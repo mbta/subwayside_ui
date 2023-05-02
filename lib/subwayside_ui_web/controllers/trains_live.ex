@@ -297,6 +297,14 @@ defmodule SubwaysideUiWeb.TrainsLive do
         |> Enum.sort_by(& &1.gps_latitude, :desc)
       end
 
-    assign(socket, :trains, trains)
+    page_title =
+      case trains do
+        [train] -> train.leader_car_nbr
+        _ -> "Trains"
+      end
+
+    socket
+    |> assign(:page_title, page_title)
+    |> assign(:trains, trains)
   end
 end
