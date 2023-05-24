@@ -15,7 +15,9 @@ defmodule SubwaysideUi.Car do
   def aw1(%__MODULE__{type_code: code}) do
     case code do
       "1" -> 38
+      "CAB" -> 38
       "2" -> 44
+      "NON_CAB" -> 44
     end
   end
 
@@ -25,8 +27,27 @@ defmodule SubwaysideUi.Car do
   def aw2(%__MODULE__{type_code: code}) do
     case code do
       "1" -> 132
+      "CAB" -> 132
       "2" -> 142
+      "NON_CAB" -> 142
     end
+  end
+
+  def from_heartbeat(%{} = map) do
+    [weight1, weight2] = map["loadWeightLb"]
+
+    weight =
+      case {weight1, weight2} do
+        {0, weight} -> weight
+        {weight, 0} -> weight
+        {weight1, weight2} -> div(weight1 + weight2, 2)
+      end
+
+    %__MODULE__{
+      car_nbr: map["nbr"],
+      type_code: map["type"],
+      weight: weight
+    }
   end
 
   def from_json_maps(%{} = info, %{} = _list) do

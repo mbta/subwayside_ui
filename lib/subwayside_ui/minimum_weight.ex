@@ -34,22 +34,18 @@ defmodule SubwaysideUi.MinimumWeight do
   def handle_events(events, _from, state) do
     state =
       events
-      |> Enum.flat_map(&Enum.zip(&1["data"]["car_infos"], &1["data"]["car_lists"]))
+      |> Enum.flat_map(& &1.cars)
       |> Enum.reduce(state, &update_state/2)
 
     {:noreply, [], state}
   end
 
-  defp update_state({info, list}, state) do
-    car = SubwaysideUi.Car.from_json_maps(info, list)
-
+  defp update_state(car, state) do
     if car.weight > 50_000 do
       cars = Map.update(state.cars, car.car_nbr, car.weight, fn old -> min(old, car.weight) end)
       %{state | cars: cars}
     else
-      Logger.warn(
-        "invalid weight car=#{car.car_nbr} info=#{Jason.encode!(info)} list=#{Jason.encode!(list)}"
-      )
+      Logger.warn("invalid weight car=#{car.car_nbr} raw=#{inspect(car)}")
 
       state
     end

@@ -236,10 +236,8 @@ defmodule SubwaysideUiWeb.TrainsLive do
 
   def mount(params, _session, socket) do
     train_id =
-      with {:ok, train_id} <- Map.fetch(params, "train_id"),
-           {train_id, ""} <- Integer.parse(train_id) do
-        train_id
-      else
+      case Map.fetch(params, "train_id") do
+        {:ok, train_id} -> train_id
         _ -> nil
       end
 
