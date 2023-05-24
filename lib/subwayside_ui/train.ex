@@ -55,6 +55,44 @@ defmodule SubwaysideUi.Train do
     ]
   end
 
+  @spec from_heartbeat(map) :: t()
+  def from_heartbeat(%{"data" => map} = root) do
+    {:ok, created_date, _} = DateTime.from_iso8601(map["createdDt"])
+    {:ok, receive_date, _} = DateTime.from_iso8601(map["receivedDt"])
+
+    flags = %Flags{
+      critical?: map["flags"]["critical"],
+      shop_mode?: map["flags"]["shopMode"],
+      heartbeat_valid?: true,
+      speed_valid?: map["flags"]["speedValid"],
+      gps_valid?: map["flags"]["gpsValid"],
+      destination_valid?: map["flags"]["operationDataValid"],
+      datetime_valid?: map["flags"]["transmissionDtValid"],
+      time_sync_wss?: !map["flags"]["timeSyncGps"],
+      time_sync_gps?: map["flags"]["timeSyncGps"]
+    }
+
+    %__MODULE__{
+      flags: flags,
+      id: root["partitionkey"],
+      leader_car_nbr: map["leadCarNbr"],
+      number_of_cars: map["numberOfCars"],
+      created_date: created_date,
+      receive_date: receive_date,
+      route_name: map["routeName"],
+      active_car_nbr: map["activeCarNbr"],
+      speed: if(flags.speed_valid?, do: map["speedMph"]),
+      gps_latitude: if(flags.gps_valid?, do: map["latitude"]),
+      gps_longitude: if(flags.gps_valid?, do: map["longitude"]),
+      destination_loc: Location.from_json_map(map["destinationStation"]),
+      previous_loc: Location.from_json_map(map["currentStation"]),
+      next_loc: Location.from_json_map(map["nextStation"]),
+      running_distance: map["runningDistanceMi"],
+      cars: Enum.map(map["cars"], &Car.from_heartbeat/1),
+      raw: map
+    }
+  end
+
   @spec from_json_map(map) :: t()
   def from_json_map(%{} = map) do
     {:ok, created_date, _} = DateTime.from_iso8601(map["created_date"])

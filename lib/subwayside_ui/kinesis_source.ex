@@ -56,6 +56,12 @@ defmodule SubwaysideUi.KinesisSource do
     {:noreply, events, state}
   end
 
+  def decode!(<<120>> <> _rest = data) do
+    data
+    |> :zlib.uncompress()
+    |> Jason.decode!()
+  end
+
   def decode!("[" <> _rest = data) do
     Jason.decode!(data)
   end
@@ -76,6 +82,13 @@ defmodule SubwaysideUi.KinesisSource do
     events =
       response["Records"]
       |> Enum.flat_map(&(&1["Data"] |> :base64.decode() |> decode!()))
+      |> Enum.map(fn
+        %{"type" => "com.mbta.ctd.subwayside.train-heartbeat"} = record ->
+          SubwaysideUi.Train.from_heartbeat(record)
+
+        %{"type" => "com.mbta.ctd.subwayside.train-info", "data" => data} ->
+          SubwaysideUi.Train.from_json_map(data)
+      end)
 
     raw_byte_size =
       response["Records"]

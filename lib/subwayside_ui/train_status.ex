@@ -57,11 +57,10 @@ defmodule SubwaysideUi.TrainStatus do
   def handle_events(events, _from, state) do
     now = DateTime.utc_now()
     old = DateTime.add(now, -5, :minute)
-    old_iso = DateTime.to_iso8601(old)
 
     state =
       events
-      |> Enum.filter(&(&1["time"] >= old_iso))
+      |> Enum.filter(&(DateTime.compare(&1.receive_date, old) != :lt))
       |> Enum.reduce(state, &update_state/2)
       |> clear_stale_trains(old)
 
@@ -75,9 +74,7 @@ defmodule SubwaysideUi.TrainStatus do
     {:noreply, [], state}
   end
 
-  defp update_state(event, state) do
-    train = SubwaysideUi.Train.from_json_map(event["data"])
-
+  defp update_state(train, state) do
     Logger.info("#{__MODULE__} updated train_id=#{train.id} created_date=#{train.created_date}")
 
     %{state | trains: Map.put(state.trains, train.id, train)}
