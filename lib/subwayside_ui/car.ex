@@ -44,7 +44,7 @@ defmodule SubwaysideUi.Car do
       end
 
     %__MODULE__{
-      car_nbr: map["nbr"],
+      car_nbr: map["nbr"] || map["carNumber"],
       type_code: map["type"],
       weight: weight
     }
