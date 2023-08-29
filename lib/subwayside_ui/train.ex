@@ -89,7 +89,7 @@ defmodule SubwaysideUi.Train do
       next_loc: Location.from_json_map(map["nextStation"]),
       running_distance: map["runningDistanceMi"],
       cars: Enum.map(map["cars"], &Car.from_heartbeat/1),
-      raw: map
+      raw: root
     }
   end
 

@@ -7,15 +7,26 @@ defmodule SubwaysideUi.KinesisSource do
 
   def start_link(opts) do
     start_link_opts = Keyword.take(opts, [:name])
-    GenStage.start_link(__MODULE__, [], start_link_opts)
+    GenStage.start_link(__MODULE__, opts, start_link_opts)
   end
 
-  defstruct shard_iterator: nil, demand: 0
+  defstruct shard_iterator: nil,
+            demand: 0,
+            shard_iterator_type: :trim_horizon,
+            shard_iterator_opts: %{}
 
   @impl GenStage
-  def init(_) do
-    state = %__MODULE__{}
-    send(self(), :fetch_iterator)
+  def init(opts) do
+    state =
+      struct!(
+        __MODULE__,
+        Keyword.take(opts, [:shard_iterator, :shard_iterator_type, :shard_iterator_opts])
+      )
+
+    if is_nil(state.shard_iterator) do
+      send(self(), :fetch_iterator)
+    end
+
     {:producer, state, dispatcher: GenStage.BroadcastDispatcher}
   end
 
@@ -41,7 +52,8 @@ defmodule SubwaysideUi.KinesisSource do
         ExAws.Kinesis.get_shard_iterator(
           stream_name(),
           shard_id,
-          :trim_horizon
+          state.shard_iterator_type,
+          state.shard_iterator_opts
         )
       )["ShardIterator"]
 
