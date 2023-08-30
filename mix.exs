@@ -53,7 +53,7 @@ defmodule SubwaysideUi.MixProject do
       {:jason, "~> 1.2"},
       {:json_formatter, "~> 0.2.0", only: [:dev], runtime: false},
       {:plug_cowboy, "~> 2.5"},
-      {:ex_aws, "~> 2.4"},
+      {:ex_aws, "~> 2.5"},
       {:hackney, "~> 1.18"},
       {:ex_aws_kinesis, "~> 2.0"},
       {:gen_stage, "~> 1.2"},
@@ -61,7 +61,8 @@ defmodule SubwaysideUi.MixProject do
       {:dialyxir, "~> 1.3", only: [:dev], runtime: false},
       {:credo, "~> 1.7", only: [:dev], runtime: false},
       {:mix_audit, "~> 2.1", only: [:dev], runtime: false},
-      {:lcov_ex, "~> 0.3.2", only: [:test], runtime: false}
+      {:lcov_ex, "~> 0.3.2", only: [:test], runtime: false},
+      {:configparser_ex, "~> 4.0", only: [:dev]}
     ]
   end
 

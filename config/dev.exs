@@ -35,6 +35,10 @@ config :subwayside_ui, dev_routes: true
 if stream_name = System.get_env("KINESIS_STREAM_NAME") do
   # using a real Kinesis stream
   config :subwayside_ui, SubwaysideUi.KinesisSource, stream_name: stream_name
+
+  config :ex_aws,
+    access_key_id: [{:system, "AWS_ACCESS_KEY_ID"}, {:awscli, :system, 5_000}],
+    secret_access_key: [{:system, "AWS_SECRET_ACCESS_KEY"}, {:awscli, :system, 5_000}]
 else
   config :ex_aws,
     access_key_id: "test",
