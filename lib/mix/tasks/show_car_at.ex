@@ -72,9 +72,11 @@ defmodule Mix.Tasks.ShowCarAt do
       if result == car_nbr do
         {:cont, {car_nbr, dt}}
       else
+        IO.inspect(record, limit: :infinity)
         {:halt, result}
       end
     else
+      ## IO.inspect(record_timestamp)
       {:cont, {car_nbr, dt}}
     end
   end
