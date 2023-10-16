@@ -1,4 +1,7 @@
 defmodule SubwaysideUI.GTFS do
+  @moduledoc """
+  Keeps GTFS-RT in-memory for providing published crowding information.
+  """
   use GenServer
   require Logger
 
@@ -25,7 +28,7 @@ defmodule SubwaysideUI.GTFS do
 
   def handle_info(_, gtfs), do: {:noreply, gtfs}
 
-  def download_gtfs() do
+  def download_gtfs do
     result = get_url() |> HTTPoison.get!()
 
     case result do
