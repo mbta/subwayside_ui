@@ -220,11 +220,13 @@ defmodule SubwaysideUiWeb.TrainsLive do
       else
         0
       end
-    occupancy_percentage = if Map.has_key?(assigns.gtfs_crowding, car.car_nbr) do
+
+    occupancy_percentage =
+      if Map.has_key?(assigns.gtfs_crowding, car.car_nbr) do
         assigns.gtfs_crowding[car.car_nbr].occupancy_percentage
-    else
-      0
-    end
+      else
+        0
+      end
 
     gtfs_three_crowding_text =
       case gtfs_crowding_three_category do
@@ -234,7 +236,8 @@ defmodule SubwaysideUiWeb.TrainsLive do
         3 -> "Crowded"
       end
 
-    gtfs_five_crowding_text = case gtfs_crowding_five_category do
+    gtfs_five_crowding_text =
+      case gtfs_crowding_five_category do
         0 -> "Bad Data"
         1 -> "Many Seats Available"
         2 -> "Few Seats Available"
@@ -244,11 +247,19 @@ defmodule SubwaysideUiWeb.TrainsLive do
       end
 
     gtfs_three_filled_classes = List.duplicate("hero-user-solid", gtfs_crowding_three_category)
-    unfilled_three = if length(gtfs_three_filled_classes) != 0, do: (3 - length(gtfs_three_filled_classes)), else: 0
+
+    unfilled_three =
+      if length(gtfs_three_filled_classes) != 0,
+        do: 3 - length(gtfs_three_filled_classes),
+        else: 0
+
     gtfs_three_unfilled_classes = List.duplicate("hero-user", unfilled_three)
 
     gtfs_five_filled_classes = List.duplicate("hero-user-solid", gtfs_crowding_five_category)
-    unfilled_five = if length(gtfs_five_filled_classes) != 0, do: (5 - length(gtfs_five_filled_classes)), else: 0
+
+    unfilled_five =
+      if length(gtfs_five_filled_classes) != 0, do: 5 - length(gtfs_five_filled_classes), else: 0
+
     gtfs_five_unfilled_classes = List.duplicate("hero-user", unfilled_five)
 
     assigns =

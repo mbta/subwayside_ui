@@ -5,23 +5,29 @@ defmodule SubwaysideUI.GTFS.TrainCrowdingStatus do
     gtfs["entity"]
     |> Enum.reduce(%{}, fn vehicle, result_acc ->
       has_vehicle = Map.has_key?(vehicle, "vehicle")
+
       if has_vehicle do
         sub_vehicle = vehicle["vehicle"]
         vehicle_label = sub_vehicle["label"]
         has_root_occupancy = Map.has_key?(vehicle, "occupancy_status")
+
         if has_root_occupancy do
           occ_pct = vehicle["occupancy_percentage"]
           occ_status = vehicle["occupancy_status"]
-          ^result_acc = Map.merge(result_acc, %{
-            vehicle_label => %{
-              occupancy_percentage: occ_pct,
-              occupancy_status: occ_status,
-              three_level_crowding: get_three_level_crowding(occ_status),
-              five_level_crowding: get_five_level_crowding(occ_status)
-            }
-          })
+
+          ^result_acc =
+            Map.merge(result_acc, %{
+              vehicle_label => %{
+                occupancy_percentage: occ_pct,
+                occupancy_status: occ_status,
+                three_level_crowding: get_three_level_crowding(occ_status),
+                five_level_crowding: get_five_level_crowding(occ_status)
+              }
+            })
         end
+
         has_multi_carriage_details = Map.has_key?(sub_vehicle, "multi_carriage_details")
+
         if has_multi_carriage_details do
           Map.merge(
             result_acc,
@@ -29,6 +35,7 @@ defmodule SubwaysideUI.GTFS.TrainCrowdingStatus do
                                                                        carriage_acc ->
               occ_pct = carriage_details["occupancy_percentage"]
               occ_status = carriage_details["occupancy_status"]
+
               Map.put(carriage_acc, carriage_details["label"], %{
                 occupancy_percentage: occ_pct,
                 occupancy_status: occ_status,
@@ -67,5 +74,4 @@ defmodule SubwaysideUI.GTFS.TrainCrowdingStatus do
       _ -> 0
     end
   end
-
 end
