@@ -77,7 +77,13 @@ defmodule SubwaysideUiWeb.TrainsLive do
       </div>
       <div>Train count: <%= length(@trains) %></div>
     </div>
-    <.train :for={train <- @trains} train={train} now={@now} filtered?={!is_nil(@train_id)} />
+    <.train
+      :for={train <- @trains}
+      train={train}
+      now={@now}
+      filtered?={!is_nil(@train_id)}
+      gtfs_crowding={assigns.gtfs_crowding}
+    />
     """
   end
 
@@ -158,12 +164,14 @@ defmodule SubwaysideUiWeb.TrainsLive do
             <th class="p-2 pb-0">Car No.</th>
             <th class="p-2 pb-0">Passengers</th>
             <th class="p-2 pb-0">Crowding</th>
+            <th class="p-2 pb-0">5-Level Crowding</th>
+            <th class="p-2 pb-0">Occupancy</th>
             <th class="p-2 pb-0">Weight (#)</th>
             <th class="p-2 pb-0">Empty Weight (#)</th>
           </tr>
         </thead>
         <tbody>
-          <.car :for={car <- @train.cars} car={car} />
+          <.car :for={car <- @train.cars} car={car} gtfs_crowding={assigns.gtfs_crowding} />
         </tbody>
       </table>
 
@@ -199,15 +207,49 @@ defmodule SubwaysideUiWeb.TrainsLive do
     passengers = div(car.weight - car_base_weight, 155)
     seated_capacity = SubwaysideUi.Car.aw1(car)
 
-    {filled_pins, crowding} =
-      cond do
-        passengers <= seated_capacity -> {1, "Not crowded"}
-        passengers <= SubwaysideUi.Car.aw2(car) -> {2, "Some crowding"}
-        true -> {3, "Crowded"}
+    gtfs_crowding_five_category =
+      if Map.has_key?(assigns.gtfs_crowding, car.car_nbr) do
+        assigns.gtfs_crowding[car.car_nbr].five_level_crowding
+      else
+        0
       end
 
-    filled_classes = for _ <- 1..filled_pins, do: "hero-user-solid"
-    unfilled_classes = for _ <- 2..filled_pins//-1, do: "hero-user"
+    gtfs_crowding_three_category =
+      if Map.has_key?(assigns.gtfs_crowding, car.car_nbr) do
+        assigns.gtfs_crowding[car.car_nbr].three_level_crowding
+      else
+        0
+      end
+    occupancy_percentage = if Map.has_key?(assigns.gtfs_crowding, car.car_nbr) do
+        assigns.gtfs_crowding[car.car_nbr].occupancy_percentage
+    else
+      0
+    end
+
+    gtfs_three_crowding_text =
+      case gtfs_crowding_three_category do
+        0 -> "Bad Data"
+        1 -> "Not crowded"
+        2 -> "Some crowding"
+        3 -> "Crowded"
+      end
+
+    gtfs_five_crowding_text = case gtfs_crowding_five_category do
+        0 -> "Bad Data"
+        1 -> "Many Seats Available"
+        2 -> "Few Seats Available"
+        3 -> "Standing Room Only"
+        4 -> "Crushed Standing Room Only"
+        5 -> "Full"
+      end
+
+    gtfs_three_filled_classes = List.duplicate("hero-user-solid", gtfs_crowding_three_category)
+    unfilled_three = if length(gtfs_three_filled_classes) != 0, do: (3 - length(gtfs_three_filled_classes)), else: 0
+    gtfs_three_unfilled_classes = List.duplicate("hero-user", unfilled_three)
+
+    gtfs_five_filled_classes = List.duplicate("hero-user-solid", gtfs_crowding_five_category)
+    unfilled_five = if length(gtfs_five_filled_classes) != 0, do: (5 - length(gtfs_five_filled_classes)), else: 0
+    gtfs_five_unfilled_classes = List.duplicate("hero-user", unfilled_five)
 
     assigns =
       assigns
@@ -215,19 +257,32 @@ defmodule SubwaysideUiWeb.TrainsLive do
       |> assign(:empty_weight, car_base_weight)
       |> assign(:seated_capacity, seated_capacity)
       |> assign(:passengers, passengers)
-      |> assign(:pin_classes, filled_classes ++ unfilled_classes)
-      |> assign(:crowding, crowding)
+      |> assign(:occupancy_percentage, occupancy_percentage)
+      |> assign(:gtfs_three_crowding_text, gtfs_three_crowding_text)
+      |> assign(:gtfs_five_crowding_text, gtfs_five_crowding_text)
+      |> assign(:gtfs_five_pin_classes, gtfs_five_filled_classes ++ gtfs_five_unfilled_classes)
+      |> assign(:gtfs_three_pin_classes, gtfs_three_filled_classes ++ gtfs_three_unfilled_classes)
 
     ~H"""
     <tr>
       <td class="pl-2 pr-2"><%= @car.car_nbr %></td>
       <td class="pl-2 pr-2"><%= @passengers %></td>
       <td class="pl-2 pr-2">
-        <span class="inline">
-          <span :for={class <- @pin_classes} class={"#{class} inline-block w-5"} />
+        <span title={@gtfs_three_crowding_text} class="inline">
+          <span :for={class <- @gtfs_three_pin_classes} class={"#{class} inline-block w-5"} />
         </span>
-        <%= @crowding %>
+        <br />
+        <%!-- <%= @gtfs_three_crowding_text %> --%>
       </td>
+      <td class="pl-2 pr-2">
+        <span title={gtfs_five_crowding_text} class="inline">
+          <span :for={class <- @gtfs_five_pin_classes} class={"#{class} inline-block w-5"} />
+        </span>
+        <br />
+        <%!-- <%= @gtfs_five_crowding_text %> --%>
+      </td>
+      <td class="pl-2 pr-2"><%= @occupancy_percentage %>%</td>
+      <!-- End GTFS Crowding -->
       <td class="pl-2 pr-2"><%= @weight %></td>
       <td class="pl-2 pr-2"><%= @empty_weight %></td>
     </tr>
@@ -250,6 +305,9 @@ defmodule SubwaysideUiWeb.TrainsLive do
       |> assign(:only_full_consist?, true)
 
     socket = set_now(socket)
+
+    gtfs_crowding = SubwaysideUI.GTFS.TrainCrowdingStatus.get_gtfs_crowding_by_train()
+    socket = set_gtfs_crowding(socket, gtfs_crowding)
 
     trains = SubwaysideUi.TrainStatus.listen(SubwaysideUi.TrainStatus, self())
     socket = set_trains(socket, trains)
@@ -304,5 +362,13 @@ defmodule SubwaysideUiWeb.TrainsLive do
     socket
     |> assign(:page_title, page_title)
     |> assign(:trains, trains)
+  end
+
+  defp set_gtfs_crowding(socket, gtfs_crowding) do
+    gtfs_crowding =
+      gtfs_crowding || SubwaysideUI.GTFS.TrainCrowdingStatus.get_gtfs_crowding_by_train()
+
+    socket
+    |> assign(:gtfs_crowding, gtfs_crowding)
   end
 end

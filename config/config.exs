@@ -20,6 +20,9 @@ config :subwayside_ui, SubwaysideUiWeb.Endpoint,
   pubsub_server: SubwaysideUi.PubSub,
   live_view: [signing_salt: "Gjj0V7iV"]
 
+config :subwayside_ui, SubwaysideUI.GTFS,
+    url: "https://cdn.mbta.com/realtime/VehiclePositions_enhanced.json"
+
 # Configure esbuild (the version is required)
 config :esbuild,
   version: "0.17.11",
