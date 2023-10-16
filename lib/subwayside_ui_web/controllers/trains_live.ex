@@ -286,7 +286,7 @@ defmodule SubwaysideUiWeb.TrainsLive do
         <%!-- <%= @gtfs_three_crowding_text %> --%>
       </td>
       <td class="pl-2 pr-2">
-        <span title={gtfs_five_crowding_text} class="inline">
+        <span title={@gtfs_five_crowding_text} class="inline">
           <span :for={class <- @gtfs_five_pin_classes} class={"#{class} inline-block w-5"} />
         </span>
         <br />
