@@ -1,5 +1,6 @@
 defmodule SubwaysideUiWeb.TrainsLive do
   use SubwaysideUiWeb, :live_view
+  alias SubwaysideUI.GTFS.TrainCrowdingStatus
 
   def render(assigns) do
     trains =
@@ -196,6 +197,26 @@ defmodule SubwaysideUiWeb.TrainsLive do
     """
   end
 
+  defp get_gtfs_three_crowding_text(category) do
+    case category do
+      0 -> "Bad Data"
+      1 -> "Not crowded"
+      2 -> "Some crowding"
+      3 -> "Crowded"
+    end
+  end
+
+  defp get_gtfs_five_crowding_text(category) do
+    case category do
+      0 -> "Bad Data"
+      1 -> "Many Seats Available"
+      2 -> "Few Seats Available"
+      3 -> "Standing Room Only"
+      4 -> "Crushed Standing Room Only"
+      5 -> "Full"
+    end
+  end
+
   def car(assigns) do
     car = assigns.car
 
@@ -228,23 +249,9 @@ defmodule SubwaysideUiWeb.TrainsLive do
         0
       end
 
-    gtfs_three_crowding_text =
-      case gtfs_crowding_three_category do
-        0 -> "Bad Data"
-        1 -> "Not crowded"
-        2 -> "Some crowding"
-        3 -> "Crowded"
-      end
+    gtfs_three_crowding_text = get_gtfs_three_crowding_text(gtfs_crowding_three_category)
 
-    gtfs_five_crowding_text =
-      case gtfs_crowding_five_category do
-        0 -> "Bad Data"
-        1 -> "Many Seats Available"
-        2 -> "Few Seats Available"
-        3 -> "Standing Room Only"
-        4 -> "Crushed Standing Room Only"
-        5 -> "Full"
-      end
+    gtfs_five_crowding_text = get_gtfs_five_crowding_text(gtfs_crowding_five_category)
 
     gtfs_three_filled_classes = List.duplicate("hero-user-solid", gtfs_crowding_three_category)
 
@@ -317,7 +324,7 @@ defmodule SubwaysideUiWeb.TrainsLive do
 
     socket = set_now(socket)
 
-    gtfs_crowding = SubwaysideUI.GTFS.TrainCrowdingStatus.get_gtfs_crowding_by_train()
+    gtfs_crowding = TrainCrowdingStatus.get_gtfs_crowding_by_train()
     socket = set_gtfs_crowding(socket, gtfs_crowding)
 
     trains = SubwaysideUi.TrainStatus.listen(SubwaysideUi.TrainStatus, self())
