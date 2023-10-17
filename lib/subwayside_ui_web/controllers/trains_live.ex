@@ -14,11 +14,16 @@ defmodule SubwaysideUiWeb.TrainsLive do
             assigns.trains
           end
 
-        if assigns.only_full_consist? do
-          Enum.filter(assigns.trains, &(&1.number_of_cars == 6))
-        else
-          trains
-        end
+        trains =
+          if assigns.only_full_consist? do
+            Enum.filter(assigns.trains, &(&1.number_of_cars == 6))
+          else
+            trains
+          end
+
+        trains = filter_to_gtfs_trains(trains, assigns.gtfs_crowding)
+
+        trains
       end
 
     assigns = assign(assigns, :trains, trains)
@@ -388,5 +393,22 @@ defmodule SubwaysideUiWeb.TrainsLive do
 
     socket
     |> assign(:gtfs_crowding, gtfs_crowding)
+  end
+
+  defp filter_to_gtfs_trains(trains, gtfs_crowding) do
+    if get_only_show_gtfs() do
+      Enum.filter(trains, fn train ->
+        train.cars
+        |> Enum.map(fn car -> car.car_nbr end)
+        # We should still show trains where a car is missing:
+        |> Enum.any?(&Enum.member?(Map.keys(gtfs_crowding), &1))
+      end)
+    else
+      trains
+    end
+  end
+
+  defp get_only_show_gtfs do
+    Keyword.fetch!(Application.get_env(:subwayside_ui, SubwaysideUi.GTFS), :only_show_gtfs)
   end
 end
