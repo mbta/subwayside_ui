@@ -17,10 +17,6 @@ defmodule SubwaysideUI.GTFS.TrainCrowdingStatus do
     gtfs = apply(feed_mod, feed_func, feed_opts)
 
     gtfs["entity"]
-    |> Enum.filter(fn entity ->
-      Map.has_key?(entity, "vehicle") and
-        Map.has_key?(entity["vehicle"], "multi_carriage_details")
-    end)
     |> Enum.map(&get_occupancy_for_entity/1)
     |> Enum.reduce(%{}, fn new, acc -> Map.merge(acc, new) end)
   end
@@ -34,6 +30,8 @@ defmodule SubwaysideUI.GTFS.TrainCrowdingStatus do
       Map.put(carriage_acc, carriage_details["label"], get_crowding(occ_status, occ_pct))
     end)
   end
+
+  defp get_occupancy_for_entity(_), do: []
 
   defp get_crowding(occ_status, occ_pct) do
     %{
