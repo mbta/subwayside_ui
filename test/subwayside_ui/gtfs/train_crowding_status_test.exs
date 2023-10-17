@@ -5,7 +5,7 @@ defmodule SubwaysideUi.GTFS.TrainCrowdingStatusTest do
 
   @test_json_payload_path "test/data/VehiclePositions_enhanced.json"
 
-  def get_gtfs_realtime_feed() do
+  def get_gtfs_realtime_feed do
     with {:ok, body} <- File.read(@test_json_payload_path), do: Jason.decode!(body)
   end
 
