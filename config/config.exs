@@ -20,10 +20,10 @@ config :subwayside_ui, SubwaysideUiWeb.Endpoint,
   pubsub_server: SubwaysideUi.PubSub,
   live_view: [signing_salt: "Gjj0V7iV"]
 
-config :subwayside_ui, SubwaysideUI.GTFS.TrainCrowdingStatus,
-  feed_func: {SubwaysideUI.GTFS.TrainCrowdingStatus, :get_gtfs_realtime_feed, []}
+config :subwayside_ui, SubwaysideUi.GTFS.TrainCrowdingStatus,
+  feed_func: {SubwaysideUi.GTFS.TrainCrowdingStatus, :get_gtfs_realtime_feed, []}
 
-config :subwayside_ui, SubwaysideUI.GTFS,
+config :subwayside_ui, SubwaysideUi.GTFS,
   url: "https://mbta-gtfs-s3.s3.amazonaws.com/rtr/VehiclePositions_enhanced.json"
 
 # Configure esbuild (the version is required)
