@@ -4,47 +4,35 @@ defmodule SubwaysideUI.GTFS.TrainCrowdingStatus do
   per-car granularity.
   """
 
+  def get_gtfs_realtime_feed do
+    GenServer.call(SubwaysideUI.GTFS, :get_gtfs_feed)
+  end
+
+  def get_feed_func do
+    Keyword.fetch!(Application.get_env(:subwayside_ui, __MODULE__), :feed_func)
+  end
+
   def get_gtfs_crowding_by_train do
-    gtfs = GenServer.call(SubwaysideUI.GTFS, :get_gtfs_feed)
+    {feed_mod, feed_func, feed_opts} = get_feed_func()
+    gtfs = apply(feed_mod, feed_func, feed_opts)
 
     gtfs["entity"]
     |> Enum.filter(fn entity ->
-      Map.has_key?(entity, "vehicle") and Map.has_key?(entity["vehicle"], "vehicle")
+      Map.has_key?(entity, "vehicle") and
+        Map.has_key?(entity["vehicle"], "multi_carriage_details")
     end)
     |> Enum.map(&get_occupancy_for_entity/1)
     |> Enum.reduce(%{}, fn new, acc -> Map.merge(acc, new) end)
   end
 
   defp get_occupancy_for_entity(%{
-         "vehicle" => %{"vehicle" => %{"label" => vehicle_label}} = vehicle
+         "vehicle" => %{"multi_carriage_details" => multi_carriage_details}
        }) do
-    has_root_occupancy = Map.has_key?(vehicle, "occupancy_status")
-    has_multi_carriage_details = Map.has_key?(vehicle, "multi_carriage_details")
-
-    result_acc =
-      if has_root_occupancy do
-        occ_pct = vehicle["occupancy_percentage"]
-        occ_status = vehicle["occupancy_status"]
-
-        %{
-          vehicle_label => get_crowding(occ_status, occ_pct)
-        }
-      else
-        %{}
-      end
-
-    if has_multi_carriage_details do
-      Map.merge(
-        result_acc,
-        Enum.reduce(vehicle["multi_carriage_details"], %{}, fn carriage_details, carriage_acc ->
-          occ_pct = carriage_details["occupancy_percentage"]
-          occ_status = carriage_details["occupancy_status"]
-          Map.put(carriage_acc, carriage_details["label"], get_crowding(occ_status, occ_pct))
-        end)
-      )
-    else
-      result_acc
-    end
+    Enum.reduce(multi_carriage_details, %{}, fn carriage_details, carriage_acc ->
+      occ_pct = carriage_details["occupancy_percentage"]
+      occ_status = carriage_details["occupancy_status"]
+      Map.put(carriage_acc, carriage_details["label"], get_crowding(occ_status, occ_pct))
+    end)
   end
 
   defp get_crowding(occ_status, occ_pct) do
