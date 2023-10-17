@@ -1,4 +1,4 @@
-defmodule SubwaysideUI.GTFS do
+defmodule SubwaysideUi.GTFS do
   @moduledoc """
   Keeps GTFS-RT in-memory for providing published crowding information.
   """
@@ -38,7 +38,7 @@ defmodule SubwaysideUI.GTFS do
           |> Jason.decode!()
 
         Logger.info(
-          "SubwaysideUI.GTFS event=gtfs_update timestamp=#{:os.system_time(:millisecond)}"
+          "SubwaysideUi.GTFS event=gtfs_update timestamp=#{:os.system_time(:millisecond)}"
         )
 
         deserialized_body

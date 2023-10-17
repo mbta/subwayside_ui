@@ -1,6 +1,6 @@
 defmodule SubwaysideUi.GTFS.TrainCrowdingStatusTest do
   use ExUnit.Case, async: true
-  alias SubwaysideUI.GTFS.TrainCrowdingStatus
+  alias SubwaysideUi.GTFS.TrainCrowdingStatus
   import Jason.Sigil
 
   @test_json_payload_path "test/data/VehiclePositions_enhanced.json"

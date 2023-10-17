@@ -1,11 +1,11 @@
-defmodule SubwaysideUI.GTFS.TrainCrowdingStatus do
+defmodule SubwaysideUi.GTFS.TrainCrowdingStatus do
   @moduledoc """
   Provides a few helper functions for quickly accessing crowding information on a
   per-car granularity.
   """
 
   def get_gtfs_realtime_feed do
-    GenServer.call(SubwaysideUI.GTFS, :get_gtfs_feed)
+    GenServer.call(SubwaysideUi.GTFS, :get_gtfs_feed)
   end
 
   def get_feed_func do

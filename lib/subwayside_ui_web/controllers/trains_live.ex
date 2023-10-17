@@ -1,6 +1,6 @@
 defmodule SubwaysideUiWeb.TrainsLive do
   use SubwaysideUiWeb, :live_view
-  alias SubwaysideUI.GTFS.TrainCrowdingStatus
+  alias SubwaysideUi.GTFS.TrainCrowdingStatus
 
   def render(assigns) do
     trains =
@@ -384,7 +384,7 @@ defmodule SubwaysideUiWeb.TrainsLive do
 
   defp set_gtfs_crowding(socket, gtfs_crowding) do
     gtfs_crowding =
-      gtfs_crowding || SubwaysideUI.GTFS.TrainCrowdingStatus.get_gtfs_crowding_by_train()
+      gtfs_crowding || SubwaysideUi.GTFS.TrainCrowdingStatus.get_gtfs_crowding_by_train()
 
     socket
     |> assign(:gtfs_crowding, gtfs_crowding)

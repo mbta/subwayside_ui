@@ -22,7 +22,7 @@ defmodule SubwaysideUi.StageSupervisor do
       {SubwaysideUi.MinimumWeight, name: SubwaysideUi.MinimumWeight, subscribe_to: subscribe_to},
       {SubwaysideUi.TrainStatus, name: SubwaysideUi.TrainStatus, subscribe_to: subscribe_to},
       SubwaysideUi.CrowdingLogger,
-      SubwaysideUI.GTFS
+      SubwaysideUi.GTFS
     ]
 
     opts = [
