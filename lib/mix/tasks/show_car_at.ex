@@ -72,6 +72,7 @@ defmodule Mix.Tasks.ShowCarAt do
       if result == car_nbr do
         {:cont, {car_nbr, dt}}
       else
+        # credo:disable-for-next-line
         IO.inspect(record, limit: :infinity)
         {:halt, result}
       end
