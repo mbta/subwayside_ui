@@ -27,9 +27,7 @@ defmodule SubwaysideUi.GTFS do
   def download_gtfs do
     url = get_url()
     deserialized_body = Req.get!(url).body
-    Logger.info(
-          "SubwaysideUi.GTFS event=gtfs_update timestamp=#{:os.system_time(:millisecond)}"
-        )
+    Logger.info("SubwaysideUi.GTFS event=gtfs_update timestamp=#{:os.system_time(:millisecond)}")
     deserialized_body
   end
 
