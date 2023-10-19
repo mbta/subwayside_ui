@@ -33,9 +33,7 @@ defmodule SubwaysideUi.GTFS do
 
     case result do
       %HTTPoison.Response{body: body, status_code: 200} ->
-        deserialized_body =
-          body
-          |> Jason.decode!()
+        deserialized_body = Jason.decode!(body)
 
         Logger.info(
           "SubwaysideUi.GTFS event=gtfs_update timestamp=#{:os.system_time(:millisecond)}"
