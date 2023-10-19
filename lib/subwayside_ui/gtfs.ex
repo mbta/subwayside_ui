@@ -25,18 +25,12 @@ defmodule SubwaysideUi.GTFS do
   def handle_info(_, gtfs), do: {:noreply, gtfs}
 
   def download_gtfs do
-    result = get_url() |> HTTPoison.get!()
-
-    case result do
-      %HTTPoison.Response{body: body, status_code: 200} ->
-        deserialized_body = Jason.decode!(body)
-
-        Logger.info(
+    url = get_url()
+    deserialized_body = Req.get!(url).body
+    Logger.info(
           "SubwaysideUi.GTFS event=gtfs_update timestamp=#{:os.system_time(:millisecond)}"
         )
-
-        deserialized_body
-    end
+    deserialized_body
   end
 
   def get_url do
