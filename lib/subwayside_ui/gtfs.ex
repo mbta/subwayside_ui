@@ -16,10 +16,6 @@ defmodule SubwaysideUi.GTFS do
 
   defp tick, do: Process.send_after(self(), :tick, @tick_interval)
 
-  def handle_cast({:add, id}, tasks), do: {:noreply, MapSet.put(tasks, id)}
-
-  def handle_cast({:remove, id}, tasks), do: {:noreply, MapSet.delete(tasks, id)}
-
   def handle_info(:tick, _gtfs) do
     gtfs = download_gtfs()
     tick()
