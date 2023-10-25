@@ -169,9 +169,9 @@ defmodule SubwaysideUiWeb.TrainsLive do
           <tr>
             <th class="p-2 pb-0">Car No.</th>
             <th class="p-2 pb-0">Passengers</th>
-            <th class="p-2 pb-0">Crowding</th>
+            <th class="p-2 pb-0">3-Level Crowding</th>
             <th class="p-2 pb-0">5-Level Crowding</th>
-            <th class="p-2 pb-0">Occupancy</th>
+            <th class="p-2 pb-0">Occupancy Percentage</th>
             <th class="p-2 pb-0">Weight (#)</th>
             <th class="p-2 pb-0">Empty Weight (#)</th>
           </tr>
