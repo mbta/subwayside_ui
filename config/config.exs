@@ -20,6 +20,17 @@ config :subwayside_ui, SubwaysideUiWeb.Endpoint,
   pubsub_server: SubwaysideUi.PubSub,
   live_view: [signing_salt: "Gjj0V7iV"]
 
+config :subwayside_ui, SubwaysideUi.GTFS.TrainCrowdingStatus,
+  feed_func: {SubwaysideUi.GTFS.TrainCrowdingStatus, :get_gtfs_realtime_feed, []}
+
+config :subwayside_ui, SubwaysideUi.GTFS,
+  # Which GTFS-RT (JSON) feed to load:
+  url:
+    System.get_env("SUBWAYSIDEUI_VEHICLEPOSITIONS_URL") ||
+      "https://mbta-gtfs-s3.s3.amazonaws.com/rtr/VehiclePositions_enhanced.json",
+  # Hide trains that don't have at least one car in GTFS-RT feed:
+  only_show_gtfs: true
+
 # Configure esbuild (the version is required)
 config :esbuild,
   version: "0.17.11",

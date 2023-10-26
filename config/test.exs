@@ -14,3 +14,6 @@ config :logger, level: :warning
 
 # Initialize plugs at runtime for faster test compilation
 config :phoenix, :plug_init_mode, :runtime
+
+config :subwayside_ui, SubwaysideUi.GTFS.TrainCrowdingStatus,
+  feed_func: {SubwaysideUi.GTFS.TrainCrowdingStatusTest, :get_gtfs_realtime_feed, []}

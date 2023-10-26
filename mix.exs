@@ -57,6 +57,7 @@ defmodule SubwaysideUi.MixProject do
       {:hackney, "~> 1.18"},
       {:ex_aws_kinesis, "~> 2.0"},
       {:gen_stage, "~> 1.2"},
+      {:req, "~> 0.4.4"},
       {:sobelow, "~> 0.12.2", only: [:dev], runtime: false},
       {:dialyxir, "~> 1.3", only: [:dev], runtime: false},
       {:credo, "~> 1.7", only: [:dev], runtime: false},

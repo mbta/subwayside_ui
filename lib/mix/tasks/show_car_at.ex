@@ -6,6 +6,8 @@ defmodule Mix.Tasks.ShowCarAt do
   """
   alias SubwaysideUi.KinesisSource
 
+  require Logger
+
   def run([car_nbr | iso_timestamps]) do
     date_times =
       for ts <- iso_timestamps do
@@ -72,7 +74,7 @@ defmodule Mix.Tasks.ShowCarAt do
       if result == car_nbr do
         {:cont, {car_nbr, dt}}
       else
-        IO.inspect(record, limit: :infinity)
+        record |> inspect(limit: :infinity) |> Logger.info()
         {:halt, result}
       end
     else
