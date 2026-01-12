@@ -116,7 +116,7 @@ jobs:
           path: deps
           key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
           restore-keys: ${{ runner.os }}-mix-
-      - uses: mbta/actions/dialyzer@v1
+      - uses: mbta/actions/dialyzer@v2
 
   test:
     name: Test Tasks
