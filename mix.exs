@@ -54,7 +54,7 @@ defmodule SubwaysideUi.MixProject do
       {:json_formatter, "~> 0.2.0", only: [:dev], runtime: false},
       {:plug_cowboy, "~> 2.5"},
       {:ex_aws, "~> 2.5"},
-      {:hackney, "~> 1.18"},
+      {:hackney, "~> 1.25"},
       {:ex_aws_kinesis, "~> 2.0"},
       {:gen_stage, "~> 1.2"},
       {:req, "~> 0.4.4"},
